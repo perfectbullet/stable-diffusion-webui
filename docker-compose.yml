@@ -2,20 +2,35 @@ name: stable-diffusion-webui-service
 
 services:
   stable-diffusion-webui:
-    image: universonic/stable-diffusion-webui:latest
-    command: --no-half --no-half-vae --precision full
+    image: universonic/stable-diffusion-webui:full
+    # 优化显存使用：移除 --no-half，添加 --medvram
+    command: --medvram --xformers --opt-sdp-attention
     # runtime: nvidia
     restart: unless-stopped
+    
+    # 添加环境变量解决 HuggingFace 下载问题
+    environment:
+      - HF_HOME=/app/.cache/huggingface
+      - TRANSFORMERS_CACHE=/app/.cache/huggingface/transformers
+      - HF_ENDPOINT=https://hf-mirror.com
+      - INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+    
     ports:
       - "50010:8080/tcp"
+    
     volumes:
-      - /home/user/metahuman_work/stable-diffusion-webui/inputs:/app/stable-diffusion-webui/inputs
-      - /home/user/metahuman_work/stable-diffusion-webui/textual_inversion_templates:/app/stable-diffusion-webui/textual_inversion_templates
-      - /home/user/metahuman_work/stable-diffusion-webui/embeddings:/app/stable-diffusion-webui/embeddings
-      - /home/user/metahuman_work/stable-diffusion-webui/extensions:/app/stable-diffusion-webui/extensions
-      - /home/user/metahuman_work/stable-diffusion-webui/models:/app/stable-diffusion-webui/models
-      - /home/user/metahuman_work/stable-diffusion-webui/localizations:/app/stable-diffusion-webui/localizations
-      - /home/user/metahuman_work/stable-diffusion-webui/outputs:/app/stable-diffusion-webui/outputs
+      - /data/metahuman_work/stable-diffusion-webui/inputs:/app/stable-diffusion-webui/inputs
+      - /data/metahuman_work/stable-diffusion-webui/textual_inversion_templates:/app/stable-diffusion-webui/textual_inversion_templates
+      - /data/metahuman_work/stable-diffusion-webui/embeddings:/app/stable-diffusion-webui/embeddings
+      - /data/metahuman_work/stable-diffusion-webui/extensions:/app/stable-diffusion-webui/extensions
+      - /data/metahuman_work/stable-diffusion-webui/models:/app/stable-diffusion-webui/models
+      - /data/metahuman_work/stable-diffusion-webui/localizations:/app/stable-diffusion-webui/localizations
+      - /data/metahuman_work/stable-diffusion-webui/outputs:/app/stable-diffusion-webui/outputs
+      # 持久化 HuggingFace 缓存
+      - /data/metahuman_work/stable-diffusion-webui/huggingface-cache:/app/.cache/huggingface
+      # 使用 Docker 命名卷持久化 venv（避免路径权限问题）
+      - sd-webui-venv:/app/stable-diffusion-webui/venv
+    
     cap_drop:
       - ALL
     cap_add:
@@ -32,3 +47,7 @@ services:
           devices:
             - driver: nvidia
               capabilities: [gpu]
+
+# 定义命名卷
+volumes:
+  sd-webui-venv:
