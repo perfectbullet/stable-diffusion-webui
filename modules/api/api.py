@@ -471,6 +471,15 @@ class Api:
             summary="获取图片风格列表",
             description="获取所有可用的图片风格选项，用于下拉选择",
         )
+        self.add_api_route(
+            "/sdapi/v1/turbo-gen-aspect-ratios",
+            self.get_turbo_gen_aspect_ratios,
+            methods=["GET"],
+            tags=["alpha-turbo-gen"],
+            response_model=list[models.AspectRatioItem],
+            summary="获取图片比例列表",
+            description="获取所有可用的图片宽高比例选项，用于下拉选择",
+        )
 
         # 原有的接口
         self.add_api_route(
@@ -1366,6 +1375,22 @@ class Api:
     def get_turbo_gen_styles(self):
         """获取图片风格列表（Turbo-Gen专用接口）"""
         return self.get_prompt_styles()
+
+    def get_turbo_gen_aspect_ratios(self):
+        """获取图片比例列表（Turbo-Gen专用接口）"""
+        aspect_ratios = [
+            {"name": "横图", "width": 768, "height": 512, "ratio": "3:2"},
+            {"name": "方图", "width": 512, "height": 512, "ratio": "1:1"},
+            {"name": "竖图", "width": 512, "height": 768, "ratio": "2:3"},
+            {"name": "超宽横图", "width": 1024, "height": 512, "ratio": "2:1"},
+            {"name": "超高竖图", "width": 512, "height": 1024, "ratio": "1:2"},
+            {"name": "宽屏横图", "width": 896, "height": 512, "ratio": "16:9"},
+            {"name": "宽屏竖图", "width": 512, "height": 896, "ratio": "9:16"},
+            {"name": "高清横图", "width": 1024, "height": 768, "ratio": "4:3"},
+            {"name": "高清竖图", "width": 768, "height": 1024, "ratio": "3:4"},
+            {"name": "高清方图", "width": 1024, "height": 1024, "ratio": "1:1"},
+        ]
+        return aspect_ratios
 
     def get_embeddings(self):
         db = sd_hijack.model_hijack.embedding_db

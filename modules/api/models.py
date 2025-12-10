@@ -467,6 +467,23 @@ class PromptStyleItem(BaseModel):
     negative_prompt: Optional[str] = Field(title="Negative Prompt")
 
 
+class AspectRatioItem(BaseModel):
+    name: str = Field(title="名称", description="比例名称")
+    width: int = Field(title="宽度", description="图片宽度(像素)")
+    height: int = Field(title="高度", description="图片高度(像素)")
+    ratio: str = Field(title="比例", description="宽高比例描述")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "横图",
+                "width": 768,
+                "height": 512,
+                "ratio": "3:2"
+            }
+        }
+
+
 class EmbeddingItem(BaseModel):
     step: Optional[int] = Field(
         title="Step",
