@@ -61,7 +61,7 @@ services:
       - ./localizations:/app/stable-diffusion-webui/localizations
       - ./outputs:/app/stable-diffusion-webui/outputs
       - ./configs:/app/stable-diffusion-webui/configs
-      
+      - ./styles.csv:/app/stable-diffusion-webui/styles.csv
       # HuggingFace 缓存（持久化，避免重复下载）
       - ./huggingface-cache:/app/.cache/huggingface
       

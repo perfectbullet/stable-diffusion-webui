@@ -434,11 +434,49 @@ class Api:
         self.app = app
         self.queue_lock = queue_lock
         api_middleware(self.app)
+
+        # Turbo-Gen 异步任务接口（放在最前面）
+        self.add_api_route(
+            "/sdapi/v1/turbo-gen-txt2img-async",
+            self.txt2img_async_api,
+            methods=["POST"],
+            tags=["alpha-turbo-gen"],
+            response_model=models.Txt2ImgAsyncResponse,
+            summary="异步生成图片",
+            description="提交txt2img任务到后台队列，立即返回任务ID",
+        )
+        self.add_api_route(
+            "/sdapi/v1/turbo-gen-task/{task_id}",
+            self.get_task_status_api,
+            methods=["GET"],
+            tags=["alpha-turbo-gen"],
+            response_model=models.TaskStatus,
+            summary="查询任务状态",
+            description="根据任务ID查询任务执行状态、进度和结果",
+        )
+        self.add_api_route(
+            "/sdapi/v1/turbo-gen-download/{filename:path}",
+            self.download_image_api,
+            methods=["GET"],
+            tags=["alpha-turbo-gen"],
+            summary="下载生成的图片",
+            description="下载指定的生成图片文件",
+        )
+        self.add_api_route(
+            "/sdapi/v1/turbo-gen-styles",
+            self.get_turbo_gen_styles,
+            methods=["GET"],
+            tags=["alpha-turbo-gen"],
+            response_model=list[models.PromptStyleItem],
+            summary="获取图片风格列表",
+            description="获取所有可用的图片风格选项，用于下拉选择",
+        )
+
+        # 原有的接口
         self.add_api_route(
             "/sdapi/v1/txt2img",
             self.text2imgapi,
             methods=["POST"],
-            tags=["txt2img"],
             response_model=models.TextToImageResponse,
         )
         self.add_api_route(
@@ -615,34 +653,6 @@ class Api:
             self.get_extensions_list,
             methods=["GET"],
             response_model=list[models.ExtensionItem],
-        )
-
-        # Turbo-Gen 异步任务接口
-        self.add_api_route(
-            "/sdapi/v1/turbo-gen-txt2img-async",
-            self.txt2img_async_api,
-            methods=["POST"],
-            tags=["turbo-gen"],
-            response_model=models.Txt2ImgAsyncResponse,
-            summary="异步生成图片",
-            description="提交txt2img任务到后台队列，立即返回任务ID",
-        )
-        self.add_api_route(
-            "/sdapi/v1/turbo-gen-task/{task_id}",
-            self.get_task_status_api,
-            methods=["GET"],
-            tags=["turbo-gen"],
-            response_model=models.TaskStatus,
-            summary="查询任务状态",
-            description="根据任务ID查询任务执行状态、进度和结果",
-        )
-        self.add_api_route(
-            "/sdapi/v1/turbo-gen-download/{filename:path}",
-            self.download_image_api,
-            methods=["GET"],
-            tags=["turbo-gen"],
-            summary="下载生成的图片",
-            description="下载指定的生成图片文件",
         )
 
         if shared.cmd_opts.api_server_stop:
@@ -1352,6 +1362,10 @@ class Api:
             )
 
         return styleList
+
+    def get_turbo_gen_styles(self):
+        """获取图片风格列表（Turbo-Gen专用接口）"""
+        return self.get_prompt_styles()
 
     def get_embeddings(self):
         db = sd_hijack.model_hijack.embedding_db
