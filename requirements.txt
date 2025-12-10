@@ -16,6 +16,7 @@ lark
 numpy
 omegaconf
 open-clip-torch
+pymongo>=4.6.0
 
 piexif
 protobuf==3.20.0

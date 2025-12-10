@@ -1,4 +1,4 @@
-name: stable-diffusion-webui-service
+version: '3.8'
 
 services:
   # MongoDB 数据库
@@ -6,6 +6,8 @@ services:
     image: mongo:7.0
     container_name: sd-mongodb
     restart: unless-stopped
+    ports:
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: yourStrongPassword123
@@ -43,14 +45,6 @@ services:
     
     command: --medvram --xformers --opt-sdp-attention --api --listen
     
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    
     volumes:
       # 原有的所有目录挂载（持久化）
       - ./inputs:/app/stable-diffusion-webui/inputs
@@ -60,10 +54,9 @@ services:
       - ./models:/app/stable-diffusion-webui/models
       - ./localizations:/app/stable-diffusion-webui/localizations
       - ./outputs:/app/stable-diffusion-webui/outputs
-      - ./configs:/app/stable-diffusion-webui/configs
       
       # HuggingFace 缓存（持久化，避免重复下载）
-      - ./huggingface-cache:/app/.cache/huggingface
+      - huggingface-cache:/app/.cache/huggingface
       
       # Python虚拟环境（使用named volume避免权限问题）
       - sd-webui-venv:/app/stable-diffusion-webui/venv
@@ -75,7 +68,15 @@ services:
       - ALL
     cap_add:
       - NET_BIND_SERVICE
- 
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
     networks:
       - sd-network
     
@@ -95,7 +96,7 @@ services:
     container_name: sd-mongo-express
     restart: unless-stopped
     ports:
-      - "50011:8081"
+      - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: admin
       ME_CONFIG_MONGODB_ADMINPASSWORD: yourStrongPassword123
@@ -111,6 +112,8 @@ volumes:
   mongodb_data:
     driver: local
   mongodb_config:
+    driver: local
+  huggingface-cache:
     driver: local
   sd-webui-venv:
     driver: local

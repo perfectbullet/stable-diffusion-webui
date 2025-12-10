@@ -327,3 +327,35 @@ class ExtensionItem(BaseModel):
     version: str = Field(title="Version", description="Extension Version")
     commit_date: str = Field(title="Commit Date", description="Extension Repository Commit Date")
     enabled: bool = Field(title="Enabled", description="Flag specifying whether this extension is enabled")
+
+
+# Turbo-Gen 异步任务相关模型
+class Txt2ImgAsyncRequest(BaseModel):
+    prompt: str = Field(default="", title="提示词", description="图片生成的提示词")
+    negative_prompt: str = Field(default="", title="负面提示词", description="负面提示词")
+    steps: int = Field(default=20, title="步数", description="采样步数")
+    width: int = Field(default=512, title="宽度", description="图片宽度")
+    height: int = Field(default=512, title="高度", description="图片高度")
+    cfg_scale: float = Field(default=7.0, title="CFG缩放", description="分类器自由引导缩放")
+    sampler_name: Optional[str] = Field(default=None, title="采样器名称", description="使用的采样器名称")
+    seed: int = Field(default=-1, title="种子", description="随机种子，-1表示随机")
+    batch_size: int = Field(default=4, title="批次大小", description="一次生成的图片数量，固定为4")
+    n_iter: int = Field(default=1, title="迭代次数", description="批次迭代次数")
+    override_settings: Optional[dict] = Field(default=None, title="覆盖设置", description="临时覆盖的设置")
+    override_settings_restore_afterwards: bool = Field(default=True, title="之后恢复设置", description="处理后是否恢复设置")
+
+class Txt2ImgAsyncResponse(BaseModel):
+    task_id: str = Field(title="任务ID", description="异步任务的唯一标识符")
+    message: str = Field(title="消息", description="响应消息")
+
+class TaskStatus(BaseModel):
+    task_id: str = Field(title="任务ID", description="任务的唯一标识符")
+    status: str = Field(title="状态", description="任务状态: pending(等待中), running(运行中), completed(已完成), failed(失败)")
+    created_at: str = Field(title="创建时间", description="任务创建时间")
+    started_at: Optional[str] = Field(default=None, title="开始时间", description="任务开始执行时间")
+    completed_at: Optional[str] = Field(default=None, title="完成时间", description="任务完成时间")
+    execution_time: Optional[float] = Field(default=None, title="执行时间", description="任务执行时长(秒)")
+    image_urls: list[str] = Field(default=[], title="图片URLs", description="生成的图片下载链接列表")
+    error_message: Optional[str] = Field(default=None, title="错误信息", description="如果任务失败，包含错误信息")
+    progress: Optional[float] = Field(default=None, title="进度", description="任务进度百分比(0-100)")
+    parameters: Optional[dict] = Field(default=None, title="参数", description="生成参数")
