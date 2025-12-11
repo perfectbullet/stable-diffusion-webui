@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 from secrets import compare_digest
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import modules.shared as shared
 from modules import (
@@ -391,7 +391,7 @@ class AsyncTaskManager:
         )
 
     def mark_completed(
-        self, task_id: str, image_urls: list[str], execution_time: float
+        self, task_id: str, image_urls: List[str], execution_time: float
     ):
         """标记任务为已完成"""
         self.update_task(
